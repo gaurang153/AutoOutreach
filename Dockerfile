@@ -14,7 +14,7 @@ WORKDIR /app
 COPY . /app
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Run the script
-CMD ["python", "run.py","-a", "2"]
+CMD ["python", "run.py", "2"]
