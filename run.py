@@ -28,6 +28,8 @@ def main():
     Base.metadata.create_all(engine)
     parser = argparse.ArgumentParser(description="Instagram Bot")
 
+    docker = input("Stopped for docker:")
+
     parser.add_argument("-a", "--account", help="Which account to Use")
     parser.add_argument("-kw", "--keyword", help="Keyword to scrape posts from")
     parser.add_argument("-ht", "--hashtag", help="To Scrape post on explore page of instagram")
@@ -45,6 +47,7 @@ def main():
     if len(accounts) == 0:
         print("No accounts found. Please add accounts first in accounts.json file.")
         return
+    
     
     if account_choice:
         account = accounts[account_choice - 1]
