@@ -1,0 +1,36 @@
+version: '3'
+services:
+  backend: 
+    image: autooutreach
+    stdin_open: true #-i
+    tty: true #-t
+    ports:
+      - "5000:5000"
+    environment: 
+      MYSQL_HOST: mysql
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: Gaurang@8378
+      MYSQL_DB: instabot
+      MYSQL_PORT: '3306'
+      DOCKERIZED: true
+    depends_on: 
+      mysql:
+        condition: service_healthy
+  mysql: 
+    image: mysql:latest
+    ports: 
+      - "3306:3306"
+    environment: 
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: instabot
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: Gaurang@8378
+    volumes: 
+      # Mount sql script into container's /docker-entrypoint-initdb.d directory to get table automatically created
+      - mysql-data:/var/lib/mysql  # Mount the volume for MySQL data storage
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uadmin -p$MYSQL_ROOT_PASSWORD"]
+      timeout: 20s
+      retries: 10
+volumes: 
+  mysql-data: 

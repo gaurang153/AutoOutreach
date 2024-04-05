@@ -40,7 +40,7 @@ class ProfileOutreach(Base):
     
     @classmethod
     def get_first_failed_profile(cls):
-        failed_profile = session.query(cls).filter_by(outreach_status=OutreachStatus.FAILED).first()
+        failed_profile = session.query(cls).filter_by(outreach_status=OutreachStatus.FAILED).with_for_update().first()
         if failed_profile:
             failed_profile.outreach_status = OutreachStatus.PENDING
             session.commit()

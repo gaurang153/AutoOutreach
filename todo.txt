@@ -1,0 +1,15 @@
+1. Change DOCKERIZED for Docker Images
+2. Add data in accounts.json
+3. Add data in messages.json
+4. Add comment in InstagramBot.py
+
+For Scraping Command:
+python ./run.py -a account_no -kw "keyword for scraping"
+eg: python ./run.py -a 2 -kw "interior design"
+If you want to scrape profiles for interior design keyword on google
+**Putting keyword in quotes ("") is must**
+
+For DM Tool Command:
+python ./run.py -a account_no
+eg: python ./run.py -a 2
+if you want to select account no 2 which is jignesh_songar
