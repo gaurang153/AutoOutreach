@@ -14,15 +14,13 @@ from collections import Counter
 import random
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from models.ProfileOutreach import ProfileOutreach, OutreachStatus
-from Screenshot import Screenshot
-from PIL import Image
 
 
 class InstagramBot:
     def __init__(self):
         chrome_options = Options()
         chrome_options.add_argument("--window-size=930,820")
-        # chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--disable-extensions")
         chrome_options.add_argument("--no-sandbox")
@@ -204,40 +202,44 @@ class InstagramBot:
     def visit_profile_and_follow(self, profile_model):
         self.driver.get(f"https://www.instagram.com/{profile_model.profile}/")
         try:
-            wait = WebDriverWait(self.driver, 15)  
-            # breakpoint()
-            follow_button = wait.until(EC.presence_of_element_located((By.XPATH, "//div[contains(text(), 'Follow')]")))
-            actions = ActionChains(self.driver)
-            actions.move_to_element(follow_button).click().perform()
+            wait = WebDriverWait(self.driver, 15)
+            try: 
+                follow_button = wait.until(EC.presence_of_element_located((By.XPATH, "//div[contains(text(), 'Follow')]")))
+                if follow_button:
+                    actions = ActionChains(self.driver)
+                    actions.move_to_element(follow_button).click().perform()
+            except TimeoutException:
+                print("Already Following or Not able to Follow")
+                
             following = wait.until(EC.presence_of_element_located((By.XPATH, "//div[contains(text(), 'Following')]")))
             if following:
                 print(f"Successfully Followed {profile_model.profile}")
             time.sleep(2)
         except TimeoutException:
-            print(f"Failed to follow the profile: {profile_model.profile}")
+            print(f"Failed to follow the profile or Requested follow if profile is private: {profile_model.profile}")
     
     def check_latest_post(self, profile_model):
         username = profile_model.profile
         self.driver.get(f"https://instagram.com/{username}/")
-        time.sleep(3)
+        time.sleep(5)
         links = set()
 
         #post
         #a[href^='/p/']
         post_links = self.driver.find_elements(By.CSS_SELECTOR, "a[href^='/p/']")
-        links.add(post_links[0].get_attribute("href"))
+        if post_links:
+            links.add(post_links[0].get_attribute("href"))
         
         #reel
         #a[href^='/reel/']
-        post_links = self.driver.find_elements(By.CSS_SELECTOR, "a[href^='/reel/']")
-        links.add(post_links[0].get_attribute("href"))
+        reel_links = self.driver.find_elements(By.CSS_SELECTOR, "a[href^='/reel/']")
+        if reel_links:
+            links.add(reel_links[0].get_attribute("href"))
 
         #return array of links for posts or reels
         return list(links)
 
     def scrape_profiles_google(self, keyword):
-        # counter = 1
-
         # Create an instance of ActionChains
         actions = ActionChains(self.driver)
 
@@ -274,41 +276,22 @@ class InstagramBot:
 
         #Scroll to Bottom of the page
         last_height = self.driver.execute_script("return document.body.scrollHeight")
+        last_link = self.driver.find_elements(By.CSS_SELECTOR, "a[href^='https://www.instagram']:last-child")[-1].get_attribute('href')
+        
         while True:
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(2)  # Adjust the sleep time as needed
             new_height = self.driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
-                # self.driver.save_screenshot(f"./screenshots/before_{counter}.png")
                 more_results = self.driver.find_element(By.XPATH, "//span[contains(text(),'More results')]")
                 if more_results:
                     actions.move_to_element(more_results).click().perform()
-                    # self.driver.save_screenshot(f"./screenshots/after_{counter}.png")
-                    # counter = counter + 1
-                    time.sleep(1)
-                    try:
-                        # Find the element
-                        element = self.driver.find_element(By.CSS_SELECTOR, "#fbar")
-                        # Get the position of the element relative to the top-left corner of the document
-                        element_location = element.location
-                        # Get the size of the element
-                        element_size = element.size
-                        # Get the viewport size
-                        viewport_size = self.driver.execute_script("return [window.innerWidth, window.innerHeight];")
-                        # Check if the element is within the viewport
-                        is_within_viewport = (
-                            0 <= element_location['x'] < viewport_size[0] and
-                            0 <= element_location['y'] < viewport_size[1] and
-                            element_size['width'] > 0 and
-                            element_size['height'] > 0
-                        )
-                        if is_within_viewport:
-                            break
-                        end_of_page = self.driver.find_element(By.XPATH, "//i[contains(text(), 'In order to show you the most relevant results,')]")
-                        if end_of_page:
-                            break
-                    except NoSuchElementException:
-                        print(".")
+                    time.sleep(2)
+                    new_last_link = self.driver.find_elements(By.CSS_SELECTOR, "a[href^='https://www.instagram']:last-child")[-1].get_attribute('href')
+                    if new_last_link == last_link:
+                        break
+                    else:
+                        last_link = new_last_link
                 else:
                     break
                 
@@ -381,7 +364,9 @@ class InstagramBot:
             actions = ActionChains(self.driver)
             
             full_message = InstagramBot.random_message()
+            string_message = ""
             for text in full_message:
+                string_message = string_message + " \n" + text
                 actions.send_keys(text)
                 actions.send_keys(Keys.RETURN)
                 actions.perform()
@@ -390,12 +375,12 @@ class InstagramBot:
             
             # Perform the actions
             print(f"Initial message sent to {username}")
-            ProfileOutreach.set_message_sent_and_status(profile_model.profile, full_message)
+            ProfileOutreach.set_message_sent_and_status(profile_model.profile, string_message)
 
             time_delay = InstagramBot.random_time_delay()
             print(f"Delay Time: {time_delay/60} mins")
             time.sleep(time_delay)
-        except Exception:
+        except NoSuchElementException:
             ProfileOutreach.set_failed_status(profile_model.profile)
 
 
@@ -428,35 +413,51 @@ class InstagramBot:
 
 
     def like_and_comment_on_posts(self, links):
-        comment = "test comment"
-        delay_time = 5
-        for link in links:
-            # Open each post link
-            self.driver.get(link)
-            time.sleep(2)
+        if links:
+            comment = "Nice I Love it!!"
+            delay_time = 5
+            for link in links:
+                
+                # Open each post link
+                self.driver.get(link)
+                time.sleep(2)
 
-            actions = ActionChains(self.driver)
-            #Like the Photo
-            like_button = self.driver.find_element(By.CSS_SELECTOR, "svg[aria-label='Like']")
-            if like_button:
-                actions.move_to_element(like_button).click().perform()
+                actions = ActionChains(self.driver)
+                #Like the Photo
+                wait = WebDriverWait(self.driver, 15)
 
-            # Find the comment input field
-            #textarea[aria-label='Add a comment…']
-            comment_input = self.driver.find_element(By.CSS_SELECTOR, 'textarea[aria-label="Add a comment…"]')
-            comment_input.click()
-            time.sleep(1)
+                try:
+                    like_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "svg[aria-label='Like']")))
+                    if like_button:
+                        actions.move_to_element(like_button).click().perform()
+                        time.sleep(2)
+                except TimeoutException:
+                    print("Not able to Like the Post")
 
-            #get comment from files or database
+                # Find the comment input field
+                try:
+                    comment_input = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'textarea[aria-label="Add a comment…"]')))
+                    if comment_input:
+                        comment_input.click()
+                        time.sleep(1)
+                        #get comment from files or database
 
-            # Create an instance of ActionChains
-            actions = ActionChains(self.driver)
-            actions.send_keys(comment)
-            actions.send_keys(Keys.RETURN)
-            # Perform the actions
-            actions.perform()
+                        # Create an instance of ActionChains
+                        actions = ActionChains(self.driver)
+                        actions.send_keys(comment)
+                        actions.send_keys(Keys.RETURN)
+                        # Perform the actions
+                        actions.perform()
+                except TimeoutException:
+                    print("Not able to comment on post")
+                
 
-            time.sleep(delay_time)
+                time.sleep(delay_time)
+                
+            print("Liked and Commented on posts")
+        else:
+            print("No posts or reels to comment on!")
+            return
 
     def close_browser(self):
         self.driver.quit()
