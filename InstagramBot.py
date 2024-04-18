@@ -14,6 +14,7 @@ from collections import Counter
 import random
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from models.ProfileOutreach import ProfileOutreach, OutreachStatus
+from models.InstagramAccount import InstagramAccount
 
 
 class InstagramBot:
@@ -33,21 +34,21 @@ class InstagramBot:
         service = Service(driver)
         self.driver = uc.Chrome(service=service, options=chrome_options)
 
-    def find_values_appearing_at_least_twice_excluding_specific_values(self, array, values_to_exclude):
-        # Remove specified values from the array
-        filtered_array = [item for item in array if item not in values_to_exclude]
-        filtered_array_without_hashtag = [item for item in filtered_array if not item.startswith("#")]
-        # Count the occurrences of each element in the filtered array
-        count = Counter(filtered_array_without_hashtag)
+    # def find_values_appearing_at_least_twice_excluding_specific_values(self, array, values_to_exclude):
+    #     # Remove specified values from the array
+    #     filtered_array = [item for item in array if item not in values_to_exclude]
+    #     filtered_array_without_hashtag = [item for item in filtered_array if not item.startswith("#")]
+    #     # Count the occurrences of each element in the filtered array
+    #     count = Counter(filtered_array_without_hashtag)
         
-        # Find all elements that are listed at least twice
-        values_appearing_at_least_twice = [key for key, value in count.items() if value >= 2]
+    #     # Find all elements that are listed at least twice
+    #     values_appearing_at_least_twice = [key for key, value in count.items() if value >= 2]
 
-        return values_appearing_at_least_twice[0]
+    #     return values_appearing_at_least_twice[0]
     
     @staticmethod
-    def random_time_delay():
-        rand_no = random.randint(5,20)
+    def random_time_delay(min, max):
+        rand_no = random.randint(min, max)
         return int(rand_no)*60
     
     @staticmethod
@@ -100,104 +101,106 @@ class InstagramBot:
         # Wait for the login process to complete (you may need to adjust the delay based on your internet speed)
         time.sleep(10)  # Wait for 5 seconds (adjust as needed)
 
-    def scrape_hashtag_posts(self, hashtag):
-        # Open Instagram and navigate to the hashtag page
-        self.driver.get(f"https://www.instagram.com/explore/tags/{hashtag}/")
-        time.sleep(8)
-        # Wait for the posts to load
-        wait = WebDriverWait(self.driver, 10)
+    # def scrape_hashtag_posts(self, hashtag):
+    #     # Open Instagram and navigate to the hashtag page
+    #     self.driver.get(f"https://www.instagram.com/explore/tags/{hashtag}/")
+    #     time.sleep(8)
+    #     # Wait for the posts to load
+    #     wait = WebDriverWait(self.driver, 10)
 
-        all_links = self.driver.execute_script("return Array.from(document.querySelectorAll('a[href][role][tabIndex]')).map(a=> a.attributes.href.value)")
-        links = [x for x in all_links if x.startswith("/p")]
+    #     all_links = self.driver.execute_script("return Array.from(document.querySelectorAll('a[href][role][tabIndex]')).map(a=> a.attributes.href.value)")
+    #     links = [x for x in all_links if x.startswith("/p")]
 
-        return links
+    #     return links
     
-    def scrape_usernames(self, links):
-        usernames = []
-        for link in links:
-            self.driver.get(f'https://www.instagram.com/{link}')
-            time.sleep(3)
-            # Wait for the username element to load
-            wait = WebDriverWait(self.driver, 10)
-            alist = self.driver.execute_script("return Array.from(document.querySelectorAll(`a[href][role][tabIndex]`)).map(p=> p.text)")
-            # Extract the username text
-            username = self.find_values_appearing_at_least_twice_excluding_specific_values(alist, ['Clip', 'Carousel', ''])
-            usernames.append(username)
+    # def scrape_usernames(self, links):
+    #     usernames = []
+    #     for link in links:
+    #         self.driver.get(f'https://www.instagram.com/{link}')
+    #         time.sleep(3)
+    #         # Wait for the username element to load
+    #         wait = WebDriverWait(self.driver, 10)
+    #         alist = self.driver.execute_script("return Array.from(document.querySelectorAll(`a[href][role][tabIndex]`)).map(p=> p.text)")
+    #         # Extract the username text
+    #         username = self.find_values_appearing_at_least_twice_excluding_specific_values(alist, ['Clip', 'Carousel', ''])
+    #         usernames.append(username)
         
-        # Remove duplicate usernames
-        usernames = list(set(usernames))
-        return usernames
+    #     # Remove duplicate usernames
+    #     usernames = list(set(usernames))
+    #     return usernames
     
-    def send_dm(self, usernames):
-        # Go to the Instagram Direct Inbox
-        self.driver.get("https://www.instagram.com/direct/inbox/")
-        time.sleep(3)
+    # def send_dm(self, usernames):
+    #     min_delay = 10
+    #     max_delay = 7
+    #     # Go to the Instagram Direct Inbox
+    #     self.driver.get("https://www.instagram.com/direct/inbox/")
+    #     time.sleep(3)
 
-        # Check if the notification pop-up is displayed
-        notification_popup = self.driver.find_element(By.XPATH, "//button[contains(text(),'Not Now')]")
-        if notification_popup.is_displayed():
-            notification_popup.click()
-            time.sleep(2)
-        print("after notification pop")
-        for username in usernames:
-            # Click the 'New Message' button
-            new_message_button = self.driver.find_element(By.CSS_SELECTOR, 'svg[aria-label="New message"]:first-of-type')
-            new_message_button.click()
-            time.sleep(2)
+    #     # Check if the notification pop-up is displayed
+    #     notification_popup = self.driver.find_element(By.XPATH, "//button[contains(text(),'Not Now')]")
+    #     if notification_popup.is_displayed():
+    #         notification_popup.click()
+    #         time.sleep(2)
+    #     print("after notification pop")
+    #     for username in usernames:
+    #         # Click the 'New Message' button
+    #         new_message_button = self.driver.find_element(By.CSS_SELECTOR, 'svg[aria-label="New message"]:first-of-type')
+    #         new_message_button.click()
+    #         time.sleep(2)
 
-            # Wait for the recipient input field to become available
-            wait = WebDriverWait(self.driver, 10)
-            recipient_input = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input:first-of-type')))
-            # Type each username and press Enter to add as a recipient
-            # input_actions = ActionChains(self.driver)
-            # input_actions.send_keys(username)
-            # input_actions.perform()
-            self.type_keys(username)
-            time.sleep(1)
-            # enter_actions = ActionChains(self.driver)
-            # enter_actions.send_keys(Keys.RETURN)
-            # enter_actions.perform()
-            self.type_keys(Keys.ENTER)
-            time.sleep(1)
-            # recipient_input.clear()
-            # recipient_input.send_keys(f"{username}")
-            # time.sleep(1)
-            # recipient_input.send_keys(Keys.ENTER)
-            # time.sleep(1)
+    #         # Wait for the recipient input field to become available
+    #         wait = WebDriverWait(self.driver, 10)
+    #         recipient_input = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input:first-of-type')))
+    #         # Type each username and press Enter to add as a recipient
+    #         # input_actions = ActionChains(self.driver)
+    #         # input_actions.send_keys(username)
+    #         # input_actions.perform()
+    #         self.type_keys(username)
+    #         time.sleep(1)
+    #         # enter_actions = ActionChains(self.driver)
+    #         # enter_actions.send_keys(Keys.RETURN)
+    #         # enter_actions.perform()
+    #         self.type_keys(Keys.ENTER)
+    #         time.sleep(1)
+    #         # recipient_input.clear()
+    #         # recipient_input.send_keys(f"{username}")
+    #         # time.sleep(1)
+    #         # recipient_input.send_keys(Keys.ENTER)
+    #         # time.sleep(1)
 
-            select_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[aria-label="Toggle selection"]:first-of-type')))
-            select_button.click()
-            time.sleep(2)
+    #         select_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[aria-label="Toggle selection"]:first-of-type')))
+    #         select_button.click()
+    #         time.sleep(2)
             
-            # Wait for the next button to become clickable
-            next_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//div[contains(text(),'Chat')]")))
+    #         # Wait for the next button to become clickable
+    #         next_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//div[contains(text(),'Chat')]")))
 
-            # Click the Next button to proceed to the message input
-            next_button.click()
-            time.sleep(3)
+    #         # Click the Next button to proceed to the message input
+    #         next_button.click()
+    #         time.sleep(3)
 
-            # Create an instance of ActionChains
-            actions = ActionChains(self.driver)
+    #         # Create an instance of ActionChains
+    #         actions = ActionChains(self.driver)
             
-            full_message = InstagramBot.random_message()
-            for text in full_message:
-                actions.send_keys(text)
-                actions.send_keys(Keys.RETURN)
-                actions.perform()
-                actions.reset_actions()
-                time.sleep(2)
+    #         full_message = InstagramBot.random_message()
+    #         for text in full_message:
+    #             actions.send_keys(text)
+    #             actions.send_keys(Keys.RETURN)
+    #             actions.perform()
+    #             actions.reset_actions()
+    #             time.sleep(2)
             
-            # Perform the actions
-            print(f"Initial message sent to {username}")
-            if usernames[-1] == username:
-                break;
-            else:
-                time_delay = InstagramBot.random_time_delay()
-                print(f"Delay Time: {time_delay/60} mins")
-                time.sleep(10)
+    #         # Perform the actions
+    #         print(f"Initial message sent to {username}")
+    #         if usernames[-1] == username:
+    #             break;
+    #         else:
+    #             time_delay = InstagramBot.random_time_delay(min_delay, max_delay)
+    #             print(f"Delay Time: {time_delay/60} mins")
+    #             time.sleep(10)
         
-        print("Messages sent to all usernames Ending the Process!!")
-        self.driver.quit()
+    #     print("Messages sent to all usernames Ending the Process!!")
+    #     self.driver.quit()
 
     def visit_profile_and_follow(self, profile_model):
         self.driver.get(f"https://www.instagram.com/{profile_model.profile}/")
@@ -314,11 +317,11 @@ class InstagramBot:
 
 
 
-    def save_profiles_to_db(self, profile_links):
+    def save_profiles_to_db(self, profile_links, city, industry):
         profiles = self.scrape_usernames_from_links(profile_links)
         #save the profiles
         for profile in profiles:
-            ProfileOutreach.add_unique_profile(profile=profile, outreach_status=OutreachStatus.NOT_SENT)
+            ProfileOutreach.add_unique_profile(profile=profile, outreach_status=OutreachStatus.NOT_SENT, city=city, industry=industry)
         print("Saved all the profiles to database with status NOT_SENT")
     
     def scrape_usernames_from_links(self, profile_links):
@@ -337,28 +340,36 @@ class InstagramBot:
 
         profiles = list(profiles_set)
         return profiles
+    
+    def visit_and_click_message(self, profile_name):
+        self.driver.get(f"https://www.instagram.com/{profile_name}/")
+        time.sleep(5)
+        wait = WebDriverWait(self.driver, 10)
+        message_button = wait.until(EC.presence_of_element_located((By.XPATH, "//div[contains(text(), 'Message')]")))
+        actions = ActionChains(self.driver)
+        actions.move_to_element(message_button).click().perform()
+        time.sleep(5)
 
-    def send_message(self, profile_model):
+    def close_notification_popup(self):
         try:
-            username = profile_model.profile
+            notification_popup = self.driver.find_element(By.XPATH, "//button[contains(text(),'Not Now')]")
+            if notification_popup.is_displayed():
+                notification_popup.click()
+                time.sleep(2)
+            print("after notification pop")
+        except NoSuchElementException:
+            print("No Popup detected")
+
+    def send_message(self, profile_model, sent_by):
+        min_delay = 7
+        max_delay = 10
+        try:
+            profile_name = profile_model.profile
             # Go to the Instagram Profile
-            self.driver.get(f"https://www.instagram.com/{username}/")
-            time.sleep(5)
-            wait = WebDriverWait(self.driver, 10)
-            message_button = wait.until(EC.presence_of_element_located((By.XPATH, "//div[contains(text(), 'Message')]")))
-            actions = ActionChains(self.driver)
-            actions.move_to_element(message_button).click().perform()
-            time.sleep(5)
+            self.visit_and_click_message(profile_name=profile_name)
 
             # Check if the notification pop-up is displayed
-            try:
-                notification_popup = self.driver.find_element(By.XPATH, "//button[contains(text(),'Not Now')]")
-                if notification_popup.is_displayed():
-                    notification_popup.click()
-                    time.sleep(2)
-                print("after notification pop")
-            except NoSuchElementException:
-                print("No Popup detected")
+            self.close_notification_popup()
 
             # Create an instance of ActionChains
             actions = ActionChains(self.driver)
@@ -374,17 +385,85 @@ class InstagramBot:
                 time.sleep(5)
             
             # Perform the actions
-            print(f"Initial message sent to {username}")
-            ProfileOutreach.set_message_sent_and_status(profile_model.profile, string_message)
+            print(f"Initial message sent to {profile_name}")
+            ProfileOutreach.set_message_sent_and_status(profile_name, string_message, sent_by)
 
-            time_delay = InstagramBot.random_time_delay()
+            time_delay = InstagramBot.random_time_delay(min_delay, max_delay)
             print(f"Delay Time: {time_delay/60} mins")
             time.sleep(time_delay)
         except NoSuchElementException:
-            ProfileOutreach.set_failed_status(profile_model.profile)
+            ProfileOutreach.set_failed_status(profile_name)
+
+    
+    def perform_follow_up_actions(self, sent_by):
+        min_delay = 2
+        max_delay = 4
+        follow_up_message = InstagramBot.load_messages()["follow_up_message"]
+        re_follow_up_message = InstagramBot.load_messages()["re_follow_up_message"]
+        breakpoint()
+        #get profile where sent_time is not null and sent time difference > 48hrs and sent_by is current account
+        follow_up_profiles = ProfileOutreach.get_follow_up_profiles(sent_by=sent_by)
+        if follow_up_profiles:
+            for profile in follow_up_profiles:
+                #check if profile replied
+                replied = self.check_reply_status(profile_name=profile.profile)
+                if replied:
+                    #if yes then update replied as true
+                    ProfileOutreach.set_replied(profile_name=profile.profile, replied=True)
+                else:
+                    #if no then update replied as false and send 1st follow up message
+                    ProfileOutreach.set_replied(profile_name=profile.profile, replied=False)
+                    actions = ActionChains(self.driver)
+                    actions.send_keys(follow_up_message)
+                    actions.send_keys(Keys.RETURN)
+                    actions.perform()
+                    time_delay = InstagramBot.random_time_delay(min_delay, max_delay)
+                    print(f"Delay Time: {time_delay/60} mins")
+                    time.sleep(time_delay)               
+        #get profile where sent time difference > 96hrs and replied is false and sent_by is current account
+        re_follow_up_profiles = ProfileOutreach.get_re_follow_up_profiles(sent_by=sent_by)
+        if re_follow_up_profiles:
+            for profile in re_follow_up_profiles:
+                replied = self.check_reply_status(profile_name=profile.profile)
+                if replied:
+                    #if yes then update replied as yes
+                    ProfileOutreach.set_replied(profile_name=profile.profile, replied=True)
+                else:
+                    #if no then update replied as false and send 2nd follow up message
+                    ProfileOutreach.set_replied(profile_name=profile.profile, replied=False)
+                    actions = ActionChains(self.driver)
+                    actions.send_keys(re_follow_up_message)
+                    actions.send_keys(Keys.RETURN)
+                    actions.perform()
+                    #set followed up as true so no more follow ups
+                    ProfileOutreach.set_followed_up(profile_name=profile.profile, followed_up=True)
+                    time_delay = InstagramBot.random_time_delay(min_delay, max_delay)
+                    print(f"Delay Time: {time_delay/60} mins")
+                    time.sleep(time_delay)
+        print("Follow Up Actions Performed Successfully!")
+    
+    def check_reply_status(self, profile_name):
+        try:
+            self.visit_and_click_message(profile_name=profile_name)
+            # Check if the notification pop-up is displayed
+            self.close_notification_popup()
+            wait = WebDriverWait(self.driver, 10)
+            replied = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[style^='background-color: rgb(var(--ig-highlight-background))']")))
+            return True
+        except TimeoutException:
+            print(f"Did not Reply: #{profile_name}")
+            return False
 
 
-    def perform_outreach_actions(self):
+    # def create_todays_report(self):
+    #     create todays csv file in directory
+    #     Get data for the report
+    #     Sorting organizing data by replied or by sent_by
+    #     Writing sorted data to csv file
+    #     Logging the path of csv and printing report generated
+
+
+    def perform_outreach_actions(self, sent_by):
         dm_limit = 15
         counter = 1
         while(counter < dm_limit):
@@ -394,7 +473,7 @@ class InstagramBot:
                 self.visit_profile_and_follow(failed_profile)
                 post_links = self.check_latest_post(failed_profile)
                 self.like_and_comment_on_posts(post_links)
-                self.send_message(failed_profile)
+                self.send_message(failed_profile, sent_by)
                 counter = counter + 1
 
             else:
@@ -405,7 +484,7 @@ class InstagramBot:
                     self.visit_profile_and_follow(not_sent_profile)
                     post_links = self.check_latest_post(not_sent_profile)
                     self.like_and_comment_on_posts(post_links)
-                    self.send_message(not_sent_profile)
+                    self.send_message(not_sent_profile, sent_by)
                     counter= counter + 1
                 else:
                     print("Please run the scraping bot no other profile left to outreach")
@@ -414,7 +493,7 @@ class InstagramBot:
 
     def like_and_comment_on_posts(self, links):
         if links:
-            comment = "Nice I Love it!!"
+            comment = InstagramBot.load_messages()["comment"]
             delay_time = 5
             for link in links:
                 
