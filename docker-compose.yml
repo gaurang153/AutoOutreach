@@ -2,8 +2,8 @@ version: '3'
 services:
   backend: 
     image: autooutreach
-    stdin_open: true #-i
-    tty: true #-t
+    stdin_open: true
+    tty: true
     ports:
       - "5000:5000"
     environment: 
@@ -13,6 +13,9 @@ services:
       MYSQL_DB: instabot
       MYSQL_PORT: '3306'
       DOCKERIZED: true
+      CITY: "new york"
+      INDUSTRY: "interior design"
+      START_DM_TOOL: true
     depends_on: 
       mysql:
         condition: service_healthy
