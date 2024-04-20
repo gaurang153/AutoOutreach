@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Stage 1: Run Scrapping tool') {
+            steps {
+                script {
+                    sh """
+                    docker compose down
+                    docker compose --env-file ./config/.env.sc up
+                    docker compose down
+                    """
+                        }
+                    }
+                }
+            }
+        }
+        stage('Stage 2: Run DM Tool') {
+            steps {
+                script {
+                    // Run DM tool
+                    sh """
+                    docker compose down
+                    docker compose --env-file ./config/.env.dm up
+                    docker compose down
+                    """
+            }
+        }
+    }
+}
