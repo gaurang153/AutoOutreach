@@ -2,6 +2,8 @@ version: '3'
 services:
   backend: 
     image: autooutreach
+    volumes:
+      - csv_reports:/reports
     stdin_open: true
     tty: true
     ports:
@@ -37,3 +39,4 @@ services:
       retries: 10
 volumes: 
   mysql-data: 
+  csv_reports:

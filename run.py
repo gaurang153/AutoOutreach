@@ -7,6 +7,10 @@ import time
 from models.InstagramAccount import InstagramAccount
 import os
 from dotenv import dotenv_values
+from utils import create_reports
+
+# UPDATE instagram_accounts SET locked = 0 WHERE id = 2;
+# update profile_outreach set replied = FALSE where id = 553;
 
 def create_bot():
     bot = InstagramBot()
@@ -34,13 +38,16 @@ def main():
 
     bot = create_bot()
     if start_dm_tool == "true":
+        if dockerized == "true":
+            create_reports()
+        
         account_choice = InstagramAccount.get_account_choice()
         if account_choice:
             print(f"Selected Account: #{account_choice.username}")
             bot.login(account_choice.username, account_choice.password)
             bot.perform_follow_up_actions(sent_by=account_choice.username)
-            #bot.perform_outreach_actions(sent_by=account_choice.username)
-            # InstagramAccount.unlock_account_choice(account_choice)
+            bot.perform_outreach_actions(sent_by=account_choice.username)
+            InstagramAccount.unlock_account_choice(account_choice)
             bot.close_browser()
         else:
             bot.close_browser()

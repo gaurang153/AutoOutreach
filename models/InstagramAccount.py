@@ -25,7 +25,8 @@ class InstagramAccount(Base):
     @classmethod
     def get_account_choice(cls):
          account = session.query(cls).filter_by(locked=False).with_for_update().first()
-         account.locked = True
+         if account:
+              account.locked = True
          session.commit()
          return account
     

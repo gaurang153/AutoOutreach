@@ -14,22 +14,26 @@ class ProfileOutreach(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     profile = Column("profile", String(255), unique=True)
+    profile_name = Column("profile_name", String(255), default=None)
     message_sent = Column("message_sent", String(255), default=None)
     sent_time = Column("sent_time", TIMESTAMP)
     outreach_status = Column(Enum(OutreachStatus.NOT_SENT, OutreachStatus.SENT, OutreachStatus.FAILED, OutreachStatus.PENDING, name="OutreachStatus"))
     city = Column("city", String(255), default=None)
     industry = Column("industry", String(255), default=None)
     replied = Column("replied", Boolean, default=None)
+    replied_message = Column("replied_message", String(255), default=None)
     followed_up = Column("followed_up", Boolean, default=False)
     sent_by = Column("sent_by", String(255), default=None)
 
-    def __init__(self, profile,outreach_status, message_sent=None, city=None, industry=None, replied=None, sent_time=None, sent_by=None, followed_up=False):
+    def __init__(self, profile,outreach_status, message_sent=None, city=None, industry=None, replied=None, sent_time=None, sent_by=None, followed_up=False, profile_name=None, replied_message=None):
         self.profile = profile
+        self.profile_name = profile_name
         self.message_sent = message_sent
         self.outreach_status = outreach_status
         self.city = city
         self.industry = industry
         self.replied = replied
+        self.replied_message = replied_message
         self.sent_time = sent_time
         self.sent_by = sent_by
         self.followed_up = followed_up
@@ -127,4 +131,22 @@ class ProfileOutreach(Base):
         profile = session.query(cls).filter_by(profile = profile_name).first()
         profile.followed_up = followed_up
         session.commit()
+
+    @classmethod
+    def set_profile_name(cls, profile_name, profile_id):
+        profile = session.query(cls).filter_by(id = profile_id).first()
+        profile.profile_name = profile_name
+        session.commit()
+
+    @classmethod
+    def set_replied_message(cls, profile, replied_message):
+        profile = session.query(cls).filter_by(profile = profile).first()
+        if profile:
+            profile.replied_message = replied_message
+        session.commit()
+
+    @classmethod
+    def get_profile_outreach(cls, profile):
+        profile_outreach = session.query(cls).filter_by(profile = profile).first()
+        return profile_outreach
 
