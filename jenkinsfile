@@ -1,7 +1,10 @@
 pipeline {
     agent any
-
-        stages {
+    parameters {
+        string(name: 'CITY', defaultValue: '', description: 'Enter the city')
+        string(name: 'INDUSTRY', defaultValue: '', description: 'Enter the industry')
+    }
+    stages {
         stage('Git Checkout') {
             steps {
                 git url: 'https://github.com/gaurang153/AutoOutreach.git', branch: 'jenkins'
@@ -15,9 +18,6 @@ pipeline {
             }
         }
         stage('Stage 1: Run Scrapping tool') {
-            options {
-                timeout(time: 5, unit: 'MINUTES')
-            }
             environment {
                 ENV_FILE = './.env.sc'
             }
@@ -25,7 +25,22 @@ pipeline {
                 script {
                     sh """
                     docker compose down
-                    docker compose --env-file ${ENV_FILE} up
+                    docker compose --env-file ${ENV_FILE} up -d
+                    """
+                }
+                // Add the loop to check container status
+                script {
+                    SERVICE_NAME = 'backend'
+                    while (true) {
+                        def activeContainerId = sh(script: "docker container ls --quiet --filter 'name=${SERVICE_NAME}'", returnStdout: true).trim()
+                        if (activeContainerId.empty) {
+                            echo "Container is not running anymore. Exiting loop."
+                            break
+                        }
+                        echo "Container is running. Sleeping for 15 minutes."
+                        sleep 60  // Sleep for 15 minutes
+                    }
+                    sh """
                     docker compose down
                     """
                 }
@@ -40,10 +55,25 @@ pipeline {
                     sh """
                     docker compose down
                     docker compose --env-file }${ENV_FILE} up
+                    """
+                }
+                // Add the loop to check container status
+                script {
+                    SERVICE_NAME = 'backend'
+                    while (true) {
+                        def activeContainerId = sh(script: "docker container ls --quiet --filter 'name=${SERVICE_NAME}'", returnStdout: true).trim()
+                        if (activeContainerId.empty) {
+                            echo "Container is not running anymore. Exiting loop."
+                            break
+                        }
+                        echo "Container is running. Sleeping for 15 minutes."
+                        sleep 60  // Sleep for 15 minutes
+                    }
+                    sh """
                     docker compose down
                     """
                 }
             }
         }
-        }
+    }
 }
