@@ -3,27 +3,31 @@ pipeline {
 
     stages {
         stage('Stage 1: Run Scrapping tool') {
+            environment {
+                ENV_FILE = './config/.env.sc'
+            }
             steps {
                 script {
                     sh """
                     docker compose down
-                    docker compose --env-file ./config/.env.sc up
+                    docker compose --env-file ${ENV_FILE} up
                     docker compose down
                     """
-                        }
-                    }
                 }
             }
         }
         stage('Stage 2: Run DM Tool') {
+            environment {
+                ENV_FILE = './config/.env.dm'
+            }
             steps {
                 script {
-                    // Run DM tool
                     sh """
                     docker compose down
-                    docker compose --env-file ./config/.env.dm up
+                    docker compose --env-file }${ENV_FILE} up
                     docker compose down
                     """
+                }
             }
         }
     }
