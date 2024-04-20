@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from urllib.parse import quote
 from sqlalchemy.engine.reflection import Inspector
+import os
 
 Base = declarative_base()
 
@@ -12,13 +13,13 @@ Base = declarative_base()
 env_vars = dotenv_values('.env')
 url = ""
 
-dockerized = env_vars.get('DOCKERIZED')
+dockerized = os.environ['DOCKERIZED']
 if dockerized == "true":
-        user = env_vars.get('MYSQL_USER')
-        password = env_vars.get('MYSQL_PASSWORD')
-        host = env_vars.get('MYSQL_HOST')
-        name = env_vars.get('MYSQL_DB')
-        port = env_vars.get('MYSQL_PORT')
+        user = os.environ['MYSQL_USER']
+        password = os.environ['MYSQL_PASSWORD']
+        host = os.environ['MYSQL_HOST']
+        name = os.environ['MYSQL_DB']
+        port = os.environ['MYSQL_PORT']
         url = 'mysql://{0}:{1}@{2}/{3}'.format(user, quote(password), host, name)
 
 else:

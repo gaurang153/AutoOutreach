@@ -1,16 +1,25 @@
 pipeline {
     agent any
 
-    stages {
         stages {
-        stage("Git Checkout") {
+        stage('Git Checkout') {
             steps {
                 git url: 'https://github.com/gaurang153/AutoOutreach.git', branch: 'jenkins'
             }
         }
+        stage('docker build') {
+            steps {
+                sh '''
+                docker build -t autooutreach:latest .
+                '''
+            }
+        }
         stage('Stage 1: Run Scrapping tool') {
+            options {
+                timeout(time: 5, unit: 'MINUTES')
+            }
             environment {
-                ENV_FILE = './config/.env.sc'
+                ENV_FILE = './.env.sc'
             }
             steps {
                 script {
@@ -24,7 +33,7 @@ pipeline {
         }
         stage('Stage 2: Run DM Tool') {
             environment {
-                ENV_FILE = './config/.env.dm'
+                ENV_FILE = './.env.dm'
             }
             steps {
                 script {
@@ -36,5 +45,5 @@ pipeline {
                 }
             }
         }
-    }
+        }
 }
