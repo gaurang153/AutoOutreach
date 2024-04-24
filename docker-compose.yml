@@ -14,10 +14,10 @@ services:
       MYSQL_PASSWORD: Gaurang@8378
       MYSQL_DB: instabot
       MYSQL_PORT: '3306'
-      DOCKERIZED: true
-      CITY: "new york"
-      INDUSTRY: "interior design"
-      START_DM_TOOL: true
+      DOCKERIZED: 'true'
+      CITY: '${CITY}'
+      INDUSTRY: '${INDUSTRY}'
+      START_DM_TOOL: '${START_DM_TOOL}'
     depends_on: 
       mysql:
         condition: service_healthy

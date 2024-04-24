@@ -23,7 +23,7 @@ def main():
     InstagramAccount.seed_data_accounts()
 
     env_vars = dotenv_values('.env')
-    dockerized = env_vars.get('DOCKERIZED')
+    dockerized = os.environ['DOCKERIZED']
     if dockerized == "true":
         city = os.environ['CITY']
         industry = os.environ['INDUSTRY']

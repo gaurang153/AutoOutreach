@@ -1,29 +1,87 @@
 pipeline {
     agent any
-
+    parameters {
+        string(name: 'CITY', defaultValue: '', description: 'Enter the city')
+        string(name: 'INDUSTRY', defaultValue: '', description: 'Enter the industry')
+    }
     stages {
+        stage('Git Checkout') {
+            steps {
+                git url: 'https://github.com/gaurang153/AutoOutreach.git', branch: 'jenkins'
+            }
+        }
+        stage('Copy Files') {
+            steps {
+                // Copy accounts.json and messages.json from desktop to Jenkins workspace
+                bat 'copy C:\\dm_tool\\accounts.json C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\dm_tool\\accounts.json'
+                bat 'copy C:\\dm_tool\\messages.json C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\dm_tool\\messages.json'
+            }
+        }
+        stage('docker build') {
+            steps {
+                sh '''
+                docker build -t autooutreach:latest .
+                '''
+            }
+        }
         stage('Stage 1: Run Scrapping tool') {
+            environment {
+                START_DM_TOOL = 'false'
+            }
             steps {
                 script {
                     sh """
                     docker compose down
-                    docker compose --env-file ./config/.env.sc up
+                    docker compose up -d
+                    sleep 120  # Sleep for 2 minutes
+                    """
+                }
+                // Add the loop to check container status
+                script {
+                    SERVICE_NAME = 'backend'
+                    while (true) {
+                        def activeContainerId = sh(script: "docker container ls --quiet --filter 'name=${SERVICE_NAME}'", returnStdout: true).trim()
+                        if (activeContainerId.empty) {
+                            echo "Container is not running anymore. Exiting loop."
+                            break
+                        }
+                        echo "Container is running. Sleeping for 15 minutes."
+                        sleep 60  // Sleep for 15 minutes
+                    }
+                    sh """
                     docker compose down
                     """
-                        }
-                    }
                 }
             }
         }
         stage('Stage 2: Run DM Tool') {
+            environment {
+                START_DM_TOOL = 'true'
+            }
             steps {
                 script {
-                    // Run DM tool
                     sh """
                     docker compose down
-                    docker compose --env-file ./config/.env.dm up
+                    docker compose up -d
+                    sleep 120  # Sleep for 2 minutes
+                    """
+                }
+                // Add the loop to check container status
+                script {
+                    SERVICE_NAME = 'backend'
+                    while (true) {
+                        def activeContainerId = sh(script: "docker container ls --quiet --filter 'name=${SERVICE_NAME}'", returnStdout: true).trim()
+                        if (activeContainerId.empty) {
+                            echo "Container is not running anymore. Exiting loop."
+                            break
+                        }
+                        echo "Container is running. Sleeping for 15 minutes."
+                        sleep 60  // Sleep for 15 minutes
+                    }
+                    sh """
                     docker compose down
                     """
+                }
             }
         }
     }
