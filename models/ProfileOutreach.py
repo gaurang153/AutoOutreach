@@ -80,7 +80,7 @@ class ProfileOutreach(Base):
         if profile:
             profile.outreach_status = OutreachStatus.SENT
             profile.message_sent = message_sent
-            profile.sent_time = datetime.datetime.now()
+            profile.sent_time = datetime.now()
             profile.sent_by = sent_by
             session.commit()
             return profile
