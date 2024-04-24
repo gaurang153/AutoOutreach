@@ -149,4 +149,9 @@ class ProfileOutreach(Base):
     def get_profile_outreach(cls, profile):
         profile_outreach = session.query(cls).filter_by(profile = profile).first()
         return profile_outreach
+    
+    @classmethod
+    def get_profile_outreach_by_id(cls, profile_id):
+        profile_outreach = session.query(cls).filter_by(id = profile_id).first()
+        return profile_outreach
 

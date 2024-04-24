@@ -16,6 +16,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from models.ProfileOutreach import ProfileOutreach, OutreachStatus
 from models.InstagramAccount import InstagramAccount
 from utils import write_data_to_report
+import os
 
 
 class InstagramBot:
@@ -53,17 +54,23 @@ class InstagramBot:
         return int(rand_no)*60
     
     @staticmethod
-    def random_message():
+    def random_message(username, city, industry):
 
         full_message = []
         messages = InstagramBot.load_messages()
         for i in range(3):
             rand_no = random.randint(0,9)
-            if i == 0:
-                full_message.append(messages["init_messages"][rand_no])
-            elif i == 1:
-                full_message.append(messages["mid_messages"][rand_no])
-            elif i == 2:
+            if messages["init_messages"]:
+                init_message = messages["init_messages"][rand_no]
+                init_message = init_message.replace('[Business Name]', username)
+                init_message = init_message.replace('[City]', city)
+                init_message = init_message.replace('[Business Type]', industry)
+                full_message.append(init_message)
+            if messages["mid_messages"]:
+                mid_message = messages["mid_messages"][rand_no]
+                mid_message = mid_message.replace('[Business Type]', industry)
+                full_message.append(mid_message)
+            if messages["last_message"]:
                 full_message.append(messages["last_message"][rand_no])
 
         return full_message
@@ -75,6 +82,7 @@ class InstagramBot:
             with open("messages.json", "r") as file:
                 messages = json.load(file)
         except FileNotFoundError:
+            print("messages.json not found! Please create messages.json in C:\\dm_tool directory")
             messages = []
         return messages
     
@@ -264,7 +272,8 @@ class InstagramBot:
         except NoSuchElementException:
             print("No Popup detected")
 
-    def send_message(self, profile_model, sent_by):
+    def send_message(self, profile_id, sent_by):
+        profile_model = ProfileOutreach.get_profile_outreach_by_id(profile_id=profile_id)
         min_delay = 7
         max_delay = 10
         try:
@@ -278,7 +287,7 @@ class InstagramBot:
             # Create an instance of ActionChains
             actions = ActionChains(self.driver)
             
-            full_message = InstagramBot.random_message()
+            full_message = InstagramBot.random_message(username=profile_model.profile, city=profile_model.city, industry=profile_model.industry)
             string_message = ""
             for text in full_message:
                 string_message = string_message + " \n" + text
@@ -304,8 +313,8 @@ class InstagramBot:
     def perform_follow_up_actions(self, sent_by):
         min_delay = 2
         max_delay = 4
-        follow_up_message = InstagramBot.load_messages()["follow_up_message"]
-        re_follow_up_message = InstagramBot.load_messages()["re_follow_up_message"]
+        follow_up_message = InstagramBot.load_messages()["follow_up_message"][random.randint(0,9)]
+        re_follow_up_message = InstagramBot.load_messages()["re_follow_up_message"][random.randint(0,9)]
         #get profile where sent_time is not null and sent time difference > 48hrs and sent_by is current account
         follow_up_profiles = ProfileOutreach.get_follow_up_profiles(sent_by=sent_by)
         if follow_up_profiles:
@@ -369,7 +378,7 @@ class InstagramBot:
             return False
 
     def perform_outreach_actions(self, sent_by):
-        dm_limit = 15
+        dm_limit = int(os.environ['DM_LIMIT'])
         counter = 1
         while(counter < dm_limit):
             failed_profile = ProfileOutreach.get_first_failed_profile()
@@ -378,7 +387,7 @@ class InstagramBot:
                 self.visit_profile_and_follow(failed_profile)
                 post_links = self.check_latest_post(failed_profile)
                 self.like_and_comment_on_posts(post_links)
-                self.send_message(failed_profile, sent_by)
+                self.send_message(profile_id=failed_profile.id, sent_by=sent_by)
                 counter = counter + 1
 
             else:
@@ -389,7 +398,7 @@ class InstagramBot:
                     self.visit_profile_and_follow(not_sent_profile)
                     post_links = self.check_latest_post(not_sent_profile)
                     self.like_and_comment_on_posts(post_links)
-                    self.send_message(not_sent_profile, sent_by)
+                    self.send_message(profile_id=not_sent_profile.id, sent_by=sent_by)
                     counter= counter + 1
                 else:
                     print("Please run the scraping bot no other profile left to outreach")
@@ -398,7 +407,7 @@ class InstagramBot:
 
     def like_and_comment_on_posts(self, links):
         if links:
-            comment = InstagramBot.load_messages()["comment"]
+            comment = InstagramBot.load_messages()["comment"][random.randint(0,9)]
             delay_time = 5
             for link in links:
                 
