@@ -17,7 +17,7 @@ services:
       DOCKERIZED: 'true'
       CITY: '${CITY}'
       INDUSTRY: '${INDUSTRY}'
-      START_DM_TOOL: 'true'
+      START_DM_TOOL: '${START_DM_TOOL}'
     depends_on: 
       mysql:
         condition: service_healthy
