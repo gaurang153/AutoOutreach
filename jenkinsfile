@@ -3,6 +3,8 @@ pipeline {
     parameters {
         string(name: 'CITY', defaultValue: '', description: 'Enter the city')
         string(name: 'INDUSTRY', defaultValue: '', description: 'Enter the industry')
+        string(name: 'ACCOUNTS', defaultValue: '1', description: 'Enter the no of accounts to run')
+        string(name: 'DM_LIMIT', defaultValue: '20', description: 'dm limit per account')
     }
     stages {
         stage('Git Checkout') {

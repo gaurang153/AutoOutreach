@@ -45,8 +45,8 @@ def main():
         if account_choice:
             print(f"Selected Account: #{account_choice.username}")
             bot.login(account_choice.username, account_choice.password)
-            bot.perform_follow_up_actions(sent_by=account_choice.username)
             bot.perform_outreach_actions(sent_by=account_choice.username)
+            bot.perform_follow_up_actions(sent_by=account_choice.username)
             InstagramAccount.unlock_account_choice(account_choice)
             bot.close_browser()
         else:

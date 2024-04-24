@@ -1,3 +1,4 @@
 accounts.json
 __pycache__/
 .env
+messages.json

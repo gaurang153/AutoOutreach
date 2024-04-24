@@ -13,6 +13,7 @@ def load_accounts():
             with open("accounts.json", "r") as file:
                 accounts = json.load(file)
         except FileNotFoundError:
+            print("accounts.json not found! Please create accounts.json in C:\\dm_tool directory")
             accounts = []
         return accounts
 
