@@ -34,7 +34,7 @@ pipeline {
                 script {
                     sh """
                     docker compose down
-                    docker compose up -d
+                    docker compose up --scale backend=1 -d 
                     sleep 120  # Sleep for 2 minutes
                     """
                 }
@@ -64,7 +64,7 @@ pipeline {
                 script {
                     sh """
                     docker compose down
-                    docker compose up -d
+                    docker compose up --scale backend=${ACCOUNTS} -d
                     sleep 120  # Sleep for 2 minutes
                     """
                 }

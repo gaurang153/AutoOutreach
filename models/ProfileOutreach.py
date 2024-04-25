@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum, Boolean, TIMESTAMP
+from sqlalchemy import Column, Integer, String, Enum, Boolean, TIMESTAMP, Text
 from database import Base, session
 from datetime import datetime, timedelta
 
@@ -15,13 +15,13 @@ class ProfileOutreach(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     profile = Column("profile", String(255), unique=True)
     profile_name = Column("profile_name", String(255), default=None)
-    message_sent = Column("message_sent", String(255), default=None)
+    message_sent = Column("message_sent", Text, default=None)
     sent_time = Column("sent_time", TIMESTAMP)
     outreach_status = Column(Enum(OutreachStatus.NOT_SENT, OutreachStatus.SENT, OutreachStatus.FAILED, OutreachStatus.PENDING, name="OutreachStatus"))
     city = Column("city", String(255), default=None)
     industry = Column("industry", String(255), default=None)
     replied = Column("replied", Boolean, default=None)
-    replied_message = Column("replied_message", String(255), default=None)
+    replied_message = Column("replied_message", Text, default=None)  
     followed_up = Column("followed_up", Boolean, default=False)
     sent_by = Column("sent_by", String(255), default=None)
 
