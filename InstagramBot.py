@@ -58,20 +58,18 @@ class InstagramBot:
 
         full_message = []
         messages = InstagramBot.load_messages()
-        for i in range(3):
-            rand_no = random.randint(0,9)
-            if messages["init_messages"]:
-                init_message = messages["init_messages"][rand_no]
-                init_message = init_message.replace('[Business Name]', username)
-                init_message = init_message.replace('[City]', city)
-                init_message = init_message.replace('[Business Type]', industry)
-                full_message.append(init_message)
-            if messages["mid_messages"]:
-                mid_message = messages["mid_messages"][rand_no]
-                mid_message = mid_message.replace('[Business Type]', industry)
-                full_message.append(mid_message)
-            if messages["last_message"]:
-                full_message.append(messages["last_message"][rand_no])
+        if messages["init_messages"]:
+            init_message = messages["init_messages"][random.randint(0,9)]
+            init_message = init_message.replace('[Business Name]', username)
+            init_message = init_message.replace('[City]', city)
+            init_message = init_message.replace('[Business Type]', industry)
+            full_message.append(init_message)
+        if messages["mid_messages"]:
+            mid_message = messages["mid_messages"][random.randint(0,9)]
+            mid_message = mid_message.replace('[Business Type]', industry)
+            full_message.append(mid_message)
+        if messages["last_message"]:
+            full_message.append(messages["last_message"][random.randint(0,9)])
 
         return full_message
 
@@ -261,6 +259,7 @@ class InstagramBot:
         actions = ActionChains(self.driver)
         actions.move_to_element(message_button).click().perform()
         time.sleep(5)
+            
 
     def close_notification_popup(self):
         try:
@@ -290,7 +289,7 @@ class InstagramBot:
             full_message = InstagramBot.random_message(username=profile_model.profile, city=profile_model.city, industry=profile_model.industry)
             string_message = ""
             for text in full_message:
-                string_message = string_message + " \n" + text
+                string_message = string_message + text + " \n"
                 actions.send_keys(text)
                 actions.key_down(Keys.SHIFT).key_down(Keys.ENTER).key_up(Keys.SHIFT).key_up(Keys.ENTER).perform()
                 actions.perform()
@@ -308,13 +307,19 @@ class InstagramBot:
             time.sleep(time_delay)
         except NoSuchElementException:
             ProfileOutreach.set_failed_status(profile_name)
+        except TimeoutException:
+            print("Message button not found cannot message")
+            ProfileOutreach.set_failed_status(profile_name)
 
     
     def perform_follow_up_actions(self, sent_by):
         min_delay = 2
         max_delay = 4
-        follow_up_message = InstagramBot.load_messages()["follow_up_message"][random.randint(0,9)]
-        re_follow_up_message = InstagramBot.load_messages()["re_follow_up_message"][random.randint(0,9)]
+        messages = InstagramBot.load_messages()
+        calendar_link = messages["calendar_link"]
+        video_link = messages["video_link"]
+        follow_up_message = messages["follow_up_message"][random.randint(0,9)].replace('[Link]', video_link)
+        re_follow_up_message = messages["re_follow_up_message"][random.randint(0,9)].replace('[Calendar Link]', calendar_link)
         #get profile where sent_time is not null and sent time difference > 48hrs and sent_by is current account
         follow_up_profiles = ProfileOutreach.get_follow_up_profiles(sent_by=sent_by)
         if follow_up_profiles:
@@ -379,7 +384,7 @@ class InstagramBot:
 
     def perform_outreach_actions(self, sent_by):
         dm_limit = int(os.environ['DM_LIMIT'])
-        counter = 1
+        counter = 0
         while(counter < dm_limit):
             failed_profile = ProfileOutreach.get_first_failed_profile()
 
