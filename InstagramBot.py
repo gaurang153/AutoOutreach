@@ -55,7 +55,7 @@ class InstagramBot:
     
     @staticmethod
     def random_message(username, city, industry):
-
+        
         full_message = []
         messages = InstagramBot.load_messages()
         if messages["init_messages"]:
@@ -104,6 +104,13 @@ class InstagramBot:
 
         # Submit the login form
         password_field.send_keys(Keys.RETURN)
+
+        try:
+            incorrect_login = wait.until(EC.presence_of_element_located((By.XPATH, "//div[contains(text(), 'password was incorrect.')]")))
+            if incorrect_login:
+                print(f"Cannot Login for Profile: {email}, Please check and update accounts")
+        except TimeoutException:
+            print(f"{email} Logged in Successfully!")
 
         # Wait for the login process to complete (you may need to adjust the delay based on your internet speed)
         time.sleep(10)  # Wait for 5 seconds (adjust as needed)
@@ -289,7 +296,7 @@ class InstagramBot:
             full_message = InstagramBot.random_message(username=profile_model.profile, city=profile_model.city, industry=profile_model.industry)
             string_message = ""
             for text in full_message:
-                string_message = string_message + text + " \n"
+                string_message = string_message + text + "\n"
                 actions.send_keys(text)
                 actions.key_down(Keys.SHIFT).key_down(Keys.ENTER).key_up(Keys.SHIFT).key_up(Keys.ENTER).perform()
                 actions.perform()

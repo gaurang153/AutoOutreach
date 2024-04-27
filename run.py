@@ -33,8 +33,9 @@ def main():
         industry = env_vars.get('INDUSTRY')
         start_dm_tool =  env_vars.get('START_DM_TOOL')
 
-    
-    keyword = industry + " " + city
+    keyword = None
+    if industry and city:
+        keyword = industry + " " + city
 
     bot = create_bot()
     if start_dm_tool == "true":

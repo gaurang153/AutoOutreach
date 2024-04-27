@@ -35,8 +35,19 @@ pipeline {
                     sh """
                     docker compose down
                     docker compose up --scale backend=1 -d 
-                    sleep 120  # Sleep for 2 minutes
                     """
+                }
+                // Check if backend container is healthy
+                script {
+                    SERVICE_NAME = "backend"
+                    while (true) {
+                        def inactiveContainerId = sh(script: "docker container ls --quiet --filter 'name=${SERVICE_NAME}'", returnStdout: true).trim()
+                        if (!inactiveContainerId.empty) {
+                            echo "Container is running Exiting Loop."
+                            break
+                        }
+                        sleep 1
+                    }
                 }
                 // Add the loop to check container status
                 script {
@@ -65,8 +76,19 @@ pipeline {
                     sh """
                     docker compose down
                     docker compose up --scale backend=${ACCOUNTS} -d
-                    sleep 120  # Sleep for 2 minutes
                     """
+                }
+                // Check if backend container is healthy
+                script {
+                    SERVICE_NAME = "backend"
+                    while (true) {
+                        def inactiveContainerId = sh(script: "docker container ls --quiet --filter 'name=${SERVICE_NAME}'", returnStdout: true).trim()
+                        if (!inactiveContainerId.empty) {
+                            echo "Container is running Exiting Loop."
+                            break
+                        }
+                        sleep 1
+                    }
                 }
                 // Add the loop to check container status
                 script {
@@ -77,8 +99,8 @@ pipeline {
                             echo "Container is not running anymore. Exiting loop."
                             break
                         }
-                        echo "Container is running. Sleeping for 30 minutes."
-                        sleep 1800  // Sleep for 30 minutes
+                        echo "Container is running. Sleeping for 5 minutes."
+                        sleep 300  // Sleep for 5 minutes
                     }
                     sh """
                     docker compose down
