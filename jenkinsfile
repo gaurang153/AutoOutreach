@@ -65,6 +65,14 @@ pipeline {
                         echo "Container is running. Sleeping for 60 seconds."
                         sleep 60  // Sleep for 60 seconds
                     }
+                }
+                script {
+                    SERVICE_NAME = 'backend'
+                    def containerIds = sh(script: "docker container ls --all --quiet --filter 'name=${SERVICE_NAME}'", returnStdout: true).trim().split()
+                    for (def containerId in containerIds) {
+                        echo "Logging output for container: ${containerId}"
+                        sh "docker logs -f ${containerId} >> ${WORKSPACE}/backend.log &"
+                    }
                     sh """
                     docker compose down
                     """
@@ -106,11 +114,25 @@ pipeline {
                         echo "Container is running. Sleeping for 5 minutes."
                         sleep 300  // Sleep for 5 minutes
                     }
+                }
+                script {
+                    SERVICE_NAME = 'backend'
+                    def containerIds = sh(script: "docker container ls --all --quiet --filter 'name=${SERVICE_NAME}'", returnStdout: true).trim().split()
+                    for (def containerId in containerIds) {
+                        echo "Logging output for container: ${containerId}"
+                        sh "docker logs -f ${containerId} >> ${WORKSPACE}/backend.log &"
+                    }
                     sh """
                     docker compose down
                     """
                 }
+                 
             }
+        }
+    }
+     post {
+        always {
+            archiveArtifacts artifacts: 'backend.log', allowEmptyArchive: true
         }
     }
 }
