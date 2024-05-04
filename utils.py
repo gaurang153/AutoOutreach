@@ -3,10 +3,12 @@ import os
 import csv
 from datetime import date
 import time
+import sys
 
 from models.ProfileOutreach import ProfileOutreach
 
 volume_path = '/reports'
+old_stdout = sys.stdout
 
 def load_accounts():
         try:
@@ -72,5 +74,28 @@ def write_data_to_report(profile, report_name):
     except Exception as e:
         print("Error writing data to CSV Reports:", e)
         
+
+# def init_logs():
+#     lock_file = os.path.join(volume_path, 'logs_lock')
+#      # Check if the lock file exists
+
+#     if not os.path.exists(lock_file):
+#         try:
+#             # Create a lock file to prevent other containers from creating the CSV file
+#             with open(lock_file, 'w') as f:
+#                 f.write('lock')
     
+#             log_file_path = os.path.join(volume_path, f"{date}_backend.log")
+#             log_file = open(log_file_path, 'w')
+#             sys.stdout = log_file
+
+#         except Exception as e:
+#             print("Error creating logs file: ", e)
+#         finally:
+#             os.remove(lock_file)
+
+#         return log_file
     
+# def destruct_logs(log_file):
+#     sys.stdout = old_stdout
+#     log_file.close()

@@ -5,6 +5,10 @@ pipeline {
         string(name: 'INDUSTRY', defaultValue: '', description: 'Enter the industry')
         string(name: 'ACCOUNTS', defaultValue: '1', description: 'Enter the no of accounts to run')
         string(name: 'DM_LIMIT', defaultValue: '20', description: 'dm limit per account')
+        string(name: 'ADDITIONAL_SEARCH', defaultValue: '', description: 'Additional Search parameters for scraping')
+        string(name: 'MIN_DELAY', defaultValue: '7', description: 'Min delay between 2 dms in mins')
+        string(name: 'MAX_DELAY', defaultValue: '10', description: 'Max delay between 2 dms in mins')
+
     }
     stages {
         stage('Git Checkout') {
