@@ -19,6 +19,9 @@ services:
       INDUSTRY: '${INDUSTRY}'
       START_DM_TOOL: '${START_DM_TOOL}'
       DM_LIMIT: '${DM_LIMIT}'
+      ADDITIONAL_SEARCH: '${ADDITIONAL_SEARCH}'
+      MIN_DELAY: '${MIN_DELAY}'
+      MAX_DELAY: '${MAX_DELAY}'
     depends_on: 
       mysql:
         condition: service_healthy

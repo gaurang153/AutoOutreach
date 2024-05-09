@@ -13,3 +13,7 @@ For DM Tool Command:
 python ./run.py -a account_no
 eg: python ./run.py -a 2
 if you want to select account no 2 which is jignesh_songar
+
+# UPDATE instagram_accounts SET locked = 0 WHERE id = 2;
+# update profile_outreach set replied = FALSE where id = 553;
+# docker run -it -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=instabot -e MYSQL_USER=admin -e MYSQL_PASSWORD=Gaurang@8378 -v dm_tool_mysql-data:/var/lib/mysql mysql

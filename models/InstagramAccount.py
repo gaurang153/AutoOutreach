@@ -5,7 +5,7 @@ from utils import load_accounts
 class InstagramAccount(Base):
     __tablename__ = 'instagram_accounts'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True)
     username = Column("username", String(255), unique=True)
     password = Column('password', String(255))
     locked = Column("locked", Boolean, default=False) 
@@ -39,6 +39,13 @@ class InstagramAccount(Base):
 
     @staticmethod
     def seed_data_accounts():
+
+        if session.query(InstagramAccount).first():
+             accounts = session.query(InstagramAccount).all()
+             for account in accounts:
+                  session.query(InstagramAccount).filter_by(id = account.id).delete()
+                  session.commit()
+             
             
         if not session.query(InstagramAccount).first():
                 # Seed data
@@ -48,9 +55,8 @@ class InstagramAccount(Base):
                 if accounts:
                     for a in accounts:
                         new_account = InstagramAccount.create(username=a["username"], password=a["password"])
-                        new_accounts.append(new_account)
-                
-                session.add_all(new_accounts)
-                session.commit()
+                        if new_account:
+                            session.add(new_account)
+                            session.commit()
         else:
                 return

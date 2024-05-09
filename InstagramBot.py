@@ -280,8 +280,8 @@ class InstagramBot:
 
     def send_message(self, profile_id, sent_by):
         profile_model = ProfileOutreach.get_profile_outreach_by_id(profile_id=profile_id)
-        min_delay = 7
-        max_delay = 10
+        min_delay = int(os.environ['MIN_DELAY'])
+        max_delay = int(os.environ['MAX_DELAY'])
         try:
             profile_name = profile_model.profile
             # Go to the Instagram Profile

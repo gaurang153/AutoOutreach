@@ -1,22 +1,14 @@
-import argparse
-import json
 from InstagramBot import InstagramBot
-import random
 from database import Base, engine, init_db 
-import time
 from models.InstagramAccount import InstagramAccount
 import os
 from dotenv import dotenv_values
 from utils import create_reports
 
-# UPDATE instagram_accounts SET locked = 0 WHERE id = 2;
-# update profile_outreach set replied = FALSE where id = 553;
-
 def create_bot():
     bot = InstagramBot()
     print("Instragrambot created")
     return bot
-
 
 def main():
     init_db()
@@ -28,6 +20,7 @@ def main():
         city = os.environ['CITY']
         industry = os.environ['INDUSTRY']
         start_dm_tool =  os.environ['START_DM_TOOL']
+        additional_search = os.environ['ADDITIONAL_SEARCH']
     else:
         city = env_vars.get('CITY')
         industry = env_vars.get('INDUSTRY')
@@ -35,7 +28,7 @@ def main():
 
     keyword = None
     if industry and city:
-        keyword = industry + " " + city
+        keyword = industry + " " + city +' ' + additional_search
 
     bot = create_bot()
     if start_dm_tool == "true":
