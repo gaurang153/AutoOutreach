@@ -12,7 +12,6 @@ def create_bot():
 
 def main():
     init_db()
-    InstagramAccount.seed_data_accounts()
 
     env_vars = dotenv_values('.env')
     dockerized = os.environ['DOCKERIZED']
@@ -21,10 +20,15 @@ def main():
         industry = os.environ['INDUSTRY']
         start_dm_tool =  os.environ['START_DM_TOOL']
         additional_search = os.environ['ADDITIONAL_SEARCH']
+        seed_data = os.environ['SEED_DATA']
     else:
         city = env_vars.get('CITY')
         industry = env_vars.get('INDUSTRY')
         start_dm_tool =  env_vars.get('START_DM_TOOL')
+
+    if seed_data == "true":
+        InstagramAccount.seed_data_accounts()
+        return
 
     keyword = None
     if industry and city:
