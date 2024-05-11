@@ -71,7 +71,8 @@ pipeline {
                     def containerIds = sh(script: "docker container ls --all --quiet --filter 'name=${SERVICE_NAME}'", returnStdout: true).trim().split()
                     for (def containerId in containerIds) {
                         echo "Logging output for container: ${containerId}"
-                        sh "docker logs -f ${containerId} >> ${WORKSPACE}/backend.log &"
+                        bat "docker logs ${containerId}"
+                        echo "####################################################"
                     }
                     sh """
                     docker compose down
@@ -120,7 +121,8 @@ pipeline {
                     def containerIds = sh(script: "docker container ls --all --quiet --filter 'name=${SERVICE_NAME}'", returnStdout: true).trim().split()
                     for (def containerId in containerIds) {
                         echo "Logging output for container: ${containerId}"
-                        sh "docker logs -f ${containerId} >> ${WORKSPACE}/backend.log &"
+                        bat "docker logs ${containerId}"
+                        echo "####################################################"
                     }
                     sh """
                     docker compose down
