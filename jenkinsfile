@@ -71,7 +71,8 @@ pipeline {
                     def containerIds = sh(script: "docker container ls --all --quiet --filter 'name=${SERVICE_NAME}'", returnStdout: true).trim().split()
                     for (def containerId in containerIds) {
                         echo "Logging output for container: ${containerId}"
-                        bat "docker logs ${containerId}"
+                        def containerLogs = sh(script: "docker logs ${containerId}", returnStdout: true).trim()
+                        echo containerLogs
                         echo "####################################################"
                     }
                     sh """
@@ -121,7 +122,8 @@ pipeline {
                     def containerIds = sh(script: "docker container ls --all --quiet --filter 'name=${SERVICE_NAME}'", returnStdout: true).trim().split()
                     for (def containerId in containerIds) {
                         echo "Logging output for container: ${containerId}"
-                        bat "docker logs ${containerId}"
+                        def containerLogs = sh(script: "docker logs ${containerId}", returnStdout: true).trim()
+                        echo containerLogs
                         echo "####################################################"
                     }
                     sh """
