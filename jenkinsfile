@@ -8,6 +8,8 @@ pipeline {
         string(name: 'ADDITIONAL_SEARCH', defaultValue: '', description: 'Additional Search parameters for scraping')
         string(name: 'MIN_DELAY', defaultValue: '7', description: 'Min delay between 2 dms in mins')
         string(name: 'MAX_DELAY', defaultValue: '10', description: 'Max delay between 2 dms in mins')
+        booleanParam(name: 'ENABLE_COMMENTS', defaultValue: false, description: 'Toggle Comments')
+        booleanParam(name: 'ENABLE_LIKES', defaultValue: false, description: 'Toggle Likes')
 
     }
     stages {
@@ -75,6 +77,24 @@ pipeline {
                         echo containerLogs
                         echo "####################################################"
                     }
+                    sh """
+                    docker compose down
+                    """
+                }
+            }
+        }
+        stage('Seeding Accounts') {
+            environment {
+                SEED_DATA = 'true'
+            }
+            steps{
+                script {
+                    sh """
+                    docker compose down
+                    docker compose up --scale backend=1 -d 
+                    """
+                }
+                script {
                     sh """
                     docker compose down
                     """

@@ -18,10 +18,13 @@ services:
       CITY: '${CITY}'
       INDUSTRY: '${INDUSTRY}'
       START_DM_TOOL: '${START_DM_TOOL}'
+      SEED_DATA: '${SEED_DATA}'
       DM_LIMIT: '${DM_LIMIT}'
       ADDITIONAL_SEARCH: '${ADDITIONAL_SEARCH}'
       MIN_DELAY: '${MIN_DELAY}'
       MAX_DELAY: '${MAX_DELAY}'
+      ENABLE_COMMENTS: '${ENABLE_COMMENTS}'
+      ENABLE_LIKES: '${ENABLE_LIKES}'
     depends_on: 
       mysql:
         condition: service_healthy

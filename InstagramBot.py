@@ -313,10 +313,10 @@ class InstagramBot:
             print(f"Delay Time: {time_delay/60} mins")
             time.sleep(time_delay)
         except NoSuchElementException:
-            ProfileOutreach.set_failed_status(profile_name)
+            ProfileOutreach.set_error_status(profile_name)
         except TimeoutException:
             print("Message button not found cannot message")
-            ProfileOutreach.set_failed_status(profile_name)
+            ProfileOutreach.set_error_status(profile_name)
 
     
     def perform_follow_up_actions(self, sent_by):
@@ -422,6 +422,10 @@ class InstagramBot:
             comment = InstagramBot.load_messages()["comment"][random.randint(0,9)]
             delay_time = 5
             for link in links:
+
+                if not os.environ['ENABLE_COMMENTS'] and not os.environ['ENABLE_LIKES']:
+                    print("Liked and Commented are disabled")
+                    break
                 
                 # Open each post link
                 self.driver.get(link)
@@ -431,30 +435,32 @@ class InstagramBot:
                 #Like the Photo
                 wait = WebDriverWait(self.driver, 15)
 
-                try:
-                    like_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "svg[aria-label='Like']")))
-                    if like_button:
-                        actions.move_to_element(like_button).click().perform()
-                        time.sleep(2)
-                except TimeoutException:
-                    print("Not able to Like the Post")
+                if os.environ['ENABLE_LIKES']:
+                    try:
+                        like_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "svg[aria-label='Like']")))
+                        if like_button:
+                            actions.move_to_element(like_button).click().perform()
+                            time.sleep(2)
+                    except TimeoutException:
+                        print("Not able to Like the Post")
 
                 # Find the comment input field
-                try:
-                    comment_input = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'textarea[aria-label="Add a comment…"]')))
-                    if comment_input:
-                        comment_input.click()
-                        time.sleep(1)
-                        #get comment from files or database
+                if os.environ['ENABLE_COMMENTS']:
+                    try:
+                        comment_input = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'textarea[aria-label="Add a comment…"]')))
+                        if comment_input:
+                            comment_input.click()
+                            time.sleep(1)
+                            #get comment from files or database
 
-                        # Create an instance of ActionChains
-                        actions = ActionChains(self.driver)
-                        actions.send_keys(comment)
-                        actions.send_keys(Keys.RETURN)
-                        # Perform the actions
-                        actions.perform()
-                except TimeoutException:
-                    print("Not able to comment on post")
+                            # Create an instance of ActionChains
+                            actions = ActionChains(self.driver)
+                            actions.send_keys(comment)
+                            actions.send_keys(Keys.RETURN)
+                            # Perform the actions
+                            actions.perform()
+                    except TimeoutException:
+                        print("Not able to comment on post")
                 
 
                 time.sleep(delay_time)

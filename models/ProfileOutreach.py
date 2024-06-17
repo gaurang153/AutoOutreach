@@ -7,6 +7,7 @@ class OutreachStatus(Enum):
     SENT = 'sent'
     FAILED = 'failed'
     PENDING = 'pending'
+    ERROR = 'error'
 
 
 class ProfileOutreach(Base):
@@ -17,7 +18,7 @@ class ProfileOutreach(Base):
     profile_name = Column("profile_name", String(255), default=None)
     message_sent = Column("message_sent", Text, default=None)
     sent_time = Column("sent_time", TIMESTAMP)
-    outreach_status = Column(Enum(OutreachStatus.NOT_SENT, OutreachStatus.SENT, OutreachStatus.FAILED, OutreachStatus.PENDING, name="OutreachStatus"))
+    outreach_status = Column(Enum(OutreachStatus.NOT_SENT, OutreachStatus.SENT, OutreachStatus.FAILED, OutreachStatus.PENDING, OutreachStatus.ERROR, name="OutreachStatus"))
     city = Column("city", String(255), default=None)
     industry = Column("industry", String(255), default=None)
     replied = Column("replied", Boolean, default=None)
@@ -90,6 +91,14 @@ class ProfileOutreach(Base):
         profile = session.query(cls).filter_by(profile = profile).first()
         if profile:
             profile.outreach_status = OutreachStatus.FAILED
+            session.commit()
+            return profile
+        
+    @classmethod
+    def set_error_status(cls, profile):
+        profile = session.query(cls).filter_by(profile = profile).first()
+        if profile:
+            profile.outreach_status = OutreachStatus.ERROR
             session.commit()
             return profile
         
