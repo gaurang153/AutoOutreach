@@ -35,6 +35,8 @@ class InstagramBot:
         driver = ChromeDriverManager().install()
         service = Service(driver)
         self.driver = uc.Chrome(service=service, options=chrome_options)
+        self.enable_comments = os.getenv('ENABLE_COMMENTS', 'false').lower() == 'true'
+        self.enable_likes = os.getenv('ENABLE_LIKES', 'false').lower() == 'true'
 
     # def find_values_appearing_at_least_twice_excluding_specific_values(self, array, values_to_exclude):
     #     # Remove specified values from the array
@@ -421,12 +423,13 @@ class InstagramBot:
         if links:
             comment = InstagramBot.load_messages()["comment"][random.randint(0,9)]
             delay_time = 5
+
+            if not self.enable_comments and not self.enable_likes:
+                    print("Liked and Commented are disabled")
+                    return
+            
             for link in links:
 
-                if not os.environ['ENABLE_COMMENTS'] and not os.environ['ENABLE_LIKES']:
-                    print("Liked and Commented are disabled")
-                    break
-                
                 # Open each post link
                 self.driver.get(link)
                 time.sleep(2)
@@ -435,7 +438,7 @@ class InstagramBot:
                 #Like the Photo
                 wait = WebDriverWait(self.driver, 15)
 
-                if os.environ['ENABLE_LIKES']:
+                if self.enable_likes:
                     try:
                         like_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "svg[aria-label='Like']")))
                         if like_button:
@@ -445,7 +448,7 @@ class InstagramBot:
                         print("Not able to Like the Post")
 
                 # Find the comment input field
-                if os.environ['ENABLE_COMMENTS']:
+                if self.enable_comments:
                     try:
                         comment_input = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'textarea[aria-label="Add a comment…"]')))
                         if comment_input:
@@ -466,6 +469,7 @@ class InstagramBot:
                 time.sleep(delay_time)
                 
             print("Liked and Commented on posts")
+            print(f"{self.enable_comments} + {self.enable_likes}")
         else:
             print("No posts or reels to comment on!")
             return

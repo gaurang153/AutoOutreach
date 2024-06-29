@@ -1,5 +1,5 @@
 from InstagramBot import InstagramBot
-from database import Base, engine, init_db 
+from database import init_db
 from models.InstagramAccount import InstagramAccount
 import os
 from dotenv import dotenv_values
@@ -11,6 +11,11 @@ def create_bot():
     return bot
 
 def main():
+
+    print("enable comments:")
+    print(os.getenv('ENABLE_COMMENTS'))
+    print("enable likes:")
+    print(os.getenv('ENABLE_LIKES'))
     init_db()
 
     env_vars = dotenv_values('.env')
